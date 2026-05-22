@@ -86,36 +86,36 @@ export class App {
     return filtered;
   }
 
-  submitApplication(): void {
-    if (!this.newApplication.company || !this.newApplication.role) {
-      return;
-    }
-
-    if (this.editingApplicationId !== null) {
-      this.jobApplicationService.updateApplication(
-        this.selectedUser,
-        this.editingApplicationId,
-        this.newApplication
-      );
-
-      this.editingApplicationId = null;
-    } else {
-      this.jobApplicationService.addApplication(
-        this.selectedUser,
-        this.newApplication
-      );
-    }
-
-    this.newApplication = {
-      company: '',
-      role: '',
-      location: '',
-      dateApplied: '',
-      status: 'Saved',
-      jobUrl: '',
-      notes: ''
-    };
+  async submitApplication(): Promise<void> {
+  if (!this.newApplication.company || !this.newApplication.role) {
+    return;
   }
+
+  if (this.editingApplicationId !== null) {
+    await this.jobApplicationService.updateApplication(
+      this.selectedUser,
+      this.editingApplicationId,
+      this.newApplication
+    );
+
+    this.editingApplicationId = null;
+  } else {
+    await this.jobApplicationService.addApplication(
+      this.selectedUser,
+      this.newApplication
+    );
+  }
+
+  this.newApplication = {
+    company: '',
+    role: '',
+    location: '',
+    dateApplied: '',
+    status: 'Saved',
+    jobUrl: '',
+    notes: ''
+  };
+}
 
   startEditingApplication(application: JobApplication): void {
     this.editingApplicationId = application.id;
@@ -131,23 +131,23 @@ export class App {
     };
   }
 
-  saveInlineEdit(): void {
-    if (this.editingApplicationId === null) {
-      return;
-    }
-
-    if (!this.editingApplicationDraft.company || !this.editingApplicationDraft.role) {
-      return;
-    }
-
-    this.jobApplicationService.updateApplication(
-      this.selectedUser,
-      this.editingApplicationId,
-      this.editingApplicationDraft
-    );
-
-    this.cancelInlineEdit();
+  async saveInlineEdit(): Promise<void> {
+  if (this.editingApplicationId === null) {
+    return;
   }
+
+  if (!this.editingApplicationDraft.company || !this.editingApplicationDraft.role) {
+    return;
+  }
+
+  await this.jobApplicationService.updateApplication(
+    this.selectedUser,
+    this.editingApplicationId,
+    this.editingApplicationDraft
+  );
+
+  this.cancelInlineEdit();
+}
 
   cancelInlineEdit(): void {
     this.editingApplicationId = null;
@@ -163,15 +163,15 @@ export class App {
     };
   }
 
-  deleteApplication(id: number): void {
-    const confirmed = confirm('Are you sure you want to delete this application?');
+  async deleteApplication(id: number): Promise<void> {
+  const confirmed = confirm('Are you sure you want to delete this application?');
 
-    if (!confirmed) {
-      return;
-    }
-
-    this.jobApplicationService.deleteApplication(this.selectedUser, id);
+  if (!confirmed) {
+    return;
   }
+
+  await this.jobApplicationService.deleteApplication(this.selectedUser, id);
+}
 
   getTotalApplications(): number {
     return this.applications.length;
@@ -209,8 +209,7 @@ export class App {
       this.isLoggedIn = true;
       this.loginError = '';
 
-      this.jobApplicationService.loadFromLocalStorage(this.selectedUser);
-
+      await this.jobApplicationService.loadApplications(this.selectedUser);
       this.selectedFilter = 'All';
       this.searchTerm = '';
       this.cancelInlineEdit();
@@ -233,7 +232,7 @@ export class App {
       this.isLoggedIn = true;
       this.loginError = '';
 
-      this.jobApplicationService.loadFromLocalStorage(this.selectedUser);
+      await this.jobApplicationService.loadApplications(this.selectedUser);
 
       this.selectedFilter = 'All';
       this.searchTerm = '';
