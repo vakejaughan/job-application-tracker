@@ -1,0 +1,446 @@
+* {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+}
+
+body {
+  margin: 0;
+}
+
+.page-container,
+.login-page {
+  min-height: 100vh;
+  background: #f4f6f8;
+  color: #111827;
+  font-family: Arial, sans-serif;
+}
+
+.page-container {
+  padding: 32px;
+}
+
+/* Shared layout */
+
+.header,
+.form-card,
+.toolbar,
+.application-list,
+.empty-state,
+.stats-grid {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-card,
+.toolbar,
+.application-card,
+.empty-state,
+.stat-card,
+.login-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.form-card,
+.toolbar,
+.application-card,
+.empty-state {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* Login */
+
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 36px;
+  border-radius: 20px;
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.08);
+}
+
+.login-card h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.login-card > p {
+  margin: 0 0 28px;
+  color: #6b7280;
+  font-size: 15px;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-card .form-group {
+  margin-bottom: 0;
+}
+
+.login-card input {
+  padding: 13px 14px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.12);
+}
+
+.login-card .primary-button {
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.login-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.login-actions .primary-button,
+.login-actions .action-button {
+  flex: 1;
+}
+
+.error-message {
+  margin: -6px 0 0;
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Header */
+
+.header {
+  margin-bottom: 24px;
+}
+
+.app-header {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 36px;
+  color: #111827;
+}
+
+.header p {
+  margin: 8px 0 0;
+  color: #6b7280;
+}
+
+.logged-in-text {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Forms */
+
+.form-card h2,
+.toolbar h2 {
+  margin-top: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-group,
+.search-group,
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  background: white;
+  color: #111827;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* Buttons */
+
+.primary-button,
+.action-button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #111827;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.primary-button {
+  padding: 12px 18px;
+}
+
+.primary-button:hover,
+.action-button:hover {
+  background: #374151;
+}
+
+.delete-button {
+  background: #dc2626;
+}
+
+.delete-button:hover {
+  background: #b91c1c;
+}
+
+.secondary-button {
+  background: #6b7280;
+}
+
+.secondary-button:hover {
+  background: #4b5563;
+}
+
+/* Toolbar/Search */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.toolbar p {
+  color: #6b7280;
+  margin-bottom: 0;
+}
+
+.toolbar-controls {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+}
+
+.search-group {
+  flex: 1;
+}
+
+.search-group input {
+  min-width: 240px;
+}
+
+.filter-group {
+  min-width: 180px;
+}
+
+/* Stats */
+
+.stats-grid {
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat-card {
+  padding: 18px;
+  text-align: center;
+}
+
+.stat-card h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.stat-card p {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Application cards */
+
+.application-list {
+  margin-bottom: 0;
+}
+
+.application-card {
+  margin-bottom: 20px;
+  border-left: 6px solid #111827;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.card-header p {
+  margin: 4px 0 0;
+  color: #6b7280;
+}
+
+.status-pill {
+  display: inline-block;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.application-details {
+  margin-top: 18px;
+}
+
+.application-details p {
+  margin: 8px 0;
+}
+
+.application-details a {
+  color: #111827;
+  font-weight: 700;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.card-actions select {
+  max-width: 180px;
+}
+
+/* Empty state */
+
+.empty-state {
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-state h3 {
+  color: #111827;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .page-container {
+    padding: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar,
+  .app-header,
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-group input {
+    min-width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card-actions select {
+    max-width: 100%;
+  }
+
+  .app-header .action-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
+  .login-card {
+    padding: 28px;
+  }
+
+  .quick-login-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .login-actions {
+    flex-direction: column;
+  }
+}

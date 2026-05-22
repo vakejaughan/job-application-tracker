@@ -1,0 +1,388 @@
+<div class="login-page" *ngIf="!isLoggedIn; else appContent">
+  <section class="login-card">
+    <h1>Job Hunt Tracker</h1>
+    <p>Log in or create an account to manage your job applications.</p>
+
+    <form (ngSubmit)="login()">
+      <div class="form-group">
+        <label for="loginUsername">Username</label>
+        <input
+          id="loginUsername"
+          name="loginUsername"
+          type="text"
+          [(ngModel)]="loginUsername"
+          placeholder="Enter your username..."
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input
+          id="loginPassword"
+          name="loginPassword"
+          type="password"
+          [(ngModel)]="loginPassword"
+          placeholder="Enter your password..."
+          required
+        />
+      </div>
+
+      <p class="error-message" *ngIf="loginError">
+        {{ loginError }}
+      </p>
+
+      <div class="login-actions">
+        <button type="submit" class="primary-button">
+          Login
+        </button>
+
+        <button
+          type="button"
+          class="action-button secondary-button"
+          (click)="createAccount()"
+        >
+          Create Account
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<ng-template #appContent>
+  <div class="page-container">
+    <header class="header app-header">
+      <div>
+        <h1>Job Application Tracker</h1>
+        <p>Track your applications, statuses, and follow-ups in one place.</p>
+        <p class="logged-in-text">Logged in as {{ loggedInEmail }}</p>
+      </div>
+
+      <button
+        class="action-button"
+        type="button"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+    </header>
+
+    <section class="form-card">
+      <h2>Add Application</h2>
+
+      <form (ngSubmit)="submitApplication()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="company">Company</label>
+            <input
+              id="company"
+              name="company"
+              type="text"
+              [(ngModel)]="newApplication.company"
+              placeholder="Example: Warner Music Group"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="role">Role</label>
+            <input
+              id="role"
+              name="role"
+              type="text"
+              [(ngModel)]="newApplication.role"
+              placeholder="Example: Digital Media Assistant"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input
+              id="location"
+              name="location"
+              type="text"
+              [(ngModel)]="newApplication.location"
+              placeholder="Example: New York, NY"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="jobUrl">Job URL</label>
+            <input
+              id="jobUrl"
+              name="jobUrl"
+              type="text"
+              [(ngModel)]="newApplication.jobUrl"
+              placeholder="Paste the job listing URL here..."
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="dateApplied">Date Applied</label>
+            <input
+              id="dateApplied"
+              name="dateApplied"
+              type="date"
+              [(ngModel)]="newApplication.dateApplied"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select
+              id="status"
+              name="status"
+              [(ngModel)]="newApplication.status"
+            >
+              <option *ngFor="let status of statuses" [value]="status">
+                {{ status }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea
+            id="notes"
+            name="notes"
+            rows="3"
+            [(ngModel)]="newApplication.notes"
+            placeholder="Add notes, follow-up plans, salary range, or contact info..."
+          ></textarea>
+        </div>
+
+        <button type="submit" class="primary-button">
+          Submit Application
+        </button>
+      </form>
+    </section>
+
+    <section class="toolbar">
+      <div>
+        <h2>Applications</h2>
+        <p>{{ filteredApplications.length }} shown</p>
+      </div>
+
+      <div class="toolbar-controls">
+        <div class="filter-group">
+          <label for="filter">Filter</label>
+          <select
+            id="filter"
+            name="filter"
+            [(ngModel)]="selectedFilter"
+          >
+            <option value="All">All</option>
+            <option *ngFor="let status of statuses" [value]="status">
+              {{ status }}
+            </option>
+          </select>
+        </div>
+
+        <div class="search-group">
+          <label for="search">Search</label>
+          <input
+            id="search"
+            name="search"
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search applications..."
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Applications</h3>
+        <p>{{ getTotalApplications() }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Applied</h3>
+        <p>{{ getAppliedCount() }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Interviewing</h3>
+        <p>{{ getInterviewingCount() }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Offer</h3>
+        <p>{{ getOfferCount() }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Rejected</h3>
+        <p>{{ getRejectedCount() }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Networking</h3>
+        <p>{{ getNetworkingCount() }}</p>
+      </div>
+    </section>
+
+    <section
+      class="application-list"
+      *ngIf="filteredApplications.length > 0; else emptyState"
+    >
+      <article
+        class="application-card"
+        *ngFor="let application of filteredApplications"
+      >
+        <ng-container *ngIf="editingApplicationId !== application.id; else editMode">
+          <div class="card-header">
+            <div>
+              <h3>{{ application.company }}</h3>
+              <p>{{ application.role }}</p>
+            </div>
+
+            <span class="status-pill">
+              {{ application.status }}
+            </span>
+          </div>
+
+          <div class="application-details">
+            <p>
+              <strong>Location:</strong>
+              {{ application.location || 'N/A' }}
+            </p>
+
+            <p>
+              <strong>Date Applied:</strong>
+              {{ application.dateApplied || 'N/A' }}
+            </p>
+
+            <p>
+              <strong>Job URL:</strong>
+              <a
+                *ngIf="application.jobUrl; else noJobUrl"
+                [href]="application.jobUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View Listing
+              </a>
+
+              <ng-template #noJobUrl>
+                <span>N/A</span>
+              </ng-template>
+            </p>
+
+            <p>
+              <strong>Notes:</strong>
+              {{ application.notes || 'No notes added.' }}
+            </p>
+          </div>
+
+          <div class="card-actions">
+            <button
+              type="button"
+              class="action-button"
+              (click)="startEditingApplication(application)"
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              class="action-button delete-button"
+              (click)="deleteApplication(application.id)"
+            >
+              Delete
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #editMode>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Company</label>
+              <input
+                type="text"
+                [(ngModel)]="editingApplicationDraft.company"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Role</label>
+              <input
+                type="text"
+                [(ngModel)]="editingApplicationDraft.role"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Location</label>
+              <input
+                type="text"
+                [(ngModel)]="editingApplicationDraft.location"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Date Applied</label>
+              <input
+                type="date"
+                [(ngModel)]="editingApplicationDraft.dateApplied"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <select [(ngModel)]="editingApplicationDraft.status">
+                <option *ngFor="let status of statuses" [value]="status">
+                  {{ status }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Job URL</label>
+              <input
+                type="text"
+                [(ngModel)]="editingApplicationDraft.jobUrl"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea
+              rows="3"
+              [(ngModel)]="editingApplicationDraft.notes"
+            ></textarea>
+          </div>
+
+          <div class="card-actions">
+            <button
+              type="button"
+              class="action-button"
+              (click)="saveInlineEdit()"
+            >
+              Save Changes
+            </button>
+
+            <button
+              type="button"
+              class="action-button secondary-button"
+              (click)="cancelInlineEdit()"
+            >
+              Cancel
+            </button>
+          </div>
+        </ng-template>
+      </article>
+    </section>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <h3>No applications found</h3>
+        <p>Add your first job application or change the selected filter.</p>
+      </div>
+    </ng-template>
+  </div>
+</ng-template>
