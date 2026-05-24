@@ -398,8 +398,6 @@ button:disabled:hover {
 
 /* Empty state */
 
-/* Empty state */
-
 .empty-state {
   text-align: center;
   color: #6b7280;
@@ -433,6 +431,8 @@ button:disabled:hover {
 .empty-state .action-button {
   margin-top: 4px;
 }
+
+/* Empty state */
 
 /* Responsive */
 
