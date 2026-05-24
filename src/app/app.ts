@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { JobApplication, ApplicationStatus } from './models/job-application.model';
@@ -29,6 +29,7 @@ export class App {
   isLoggedIn: boolean = false;
   isAuthLoading: boolean = false;
   isAuthChecking: boolean = true;
+  isApplicationsLoading: boolean = false;
 
   loginUsername: string = '';
   loginPassword: string = '';
@@ -60,25 +61,30 @@ export class App {
 
   constructor(
     private jobApplicationService: JobApplicationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private ngZone: NgZone
   ) {
-    this.authService.watchAuthState(async user => {
-      if (user) {
-        this.selectedUser = user.uid;
-        this.loggedInEmail = user.email || '';
-        this.isLoggedIn = true;
+    this.authService.watchAuthState(user => {
+      this.ngZone.run(() => {
+        this.selectedFilter = 'All';
+        this.searchTerm = '';
+        this.cancelInlineEdit();
 
-        await this.jobApplicationService.loadApplications(this.selectedUser);
-      } else {
-        this.selectedUser = '';
-        this.loggedInEmail = '';
-        this.isLoggedIn = false;
-      }
+        if (user) {
+          this.selectedUser = user.uid;
+          this.loggedInEmail = user.email || '';
+          this.isLoggedIn = true;
+          this.isAuthChecking = false;
 
-      this.selectedFilter = 'All';
-      this.searchTerm = '';
-      this.cancelInlineEdit();
-      this.isAuthChecking = false;
+          this.loadApplicationsForCurrentUser();
+        } else {
+          this.selectedUser = '';
+          this.loggedInEmail = '';
+          this.isLoggedIn = false;
+          this.isApplicationsLoading = false;
+          this.isAuthChecking = false;
+        }
+      });
     });
   }
 
@@ -106,6 +112,22 @@ export class App {
     }
 
     return filtered;
+  }
+
+  private async loadApplicationsForCurrentUser(): Promise<void> {
+    if (!this.selectedUser) {
+      return;
+    }
+
+    this.isApplicationsLoading = true;
+
+    try {
+      await this.jobApplicationService.loadApplications(this.selectedUser);
+    } finally {
+      this.ngZone.run(() => {
+        this.isApplicationsLoading = false;
+      });
+    }
   }
 
   async submitApplication(): Promise<void> {
@@ -241,21 +263,27 @@ export class App {
         this.loginPassword
       );
 
-      this.selectedUser = user.uid;
-      this.loggedInEmail = user.email || '';
-      this.isLoggedIn = true;
+      this.ngZone.run(() => {
+        this.selectedUser = user.uid;
+        this.loggedInEmail = user.email || '';
+        this.isLoggedIn = true;
 
-      await this.jobApplicationService.loadApplications(this.selectedUser);
+        this.selectedFilter = 'All';
+        this.searchTerm = '';
+        this.cancelInlineEdit();
+      });
 
-      this.selectedFilter = 'All';
-      this.searchTerm = '';
-      this.cancelInlineEdit();
+      await this.loadApplicationsForCurrentUser();
     } catch (error) {
-      this.loginError = error instanceof Error
-        ? error.message
-        : 'Something went wrong while logging in.';
+      this.ngZone.run(() => {
+        this.loginError = error instanceof Error
+          ? error.message
+          : 'Something went wrong while logging in.';
+      });
     } finally {
-      this.isAuthLoading = false;
+      this.ngZone.run(() => {
+        this.isAuthLoading = false;
+      });
     }
   }
 
@@ -269,21 +297,27 @@ export class App {
         this.loginPassword
       );
 
-      this.selectedUser = user.uid;
-      this.loggedInEmail = user.email || '';
-      this.isLoggedIn = true;
+      this.ngZone.run(() => {
+        this.selectedUser = user.uid;
+        this.loggedInEmail = user.email || '';
+        this.isLoggedIn = true;
 
-      await this.jobApplicationService.loadApplications(this.selectedUser);
+        this.selectedFilter = 'All';
+        this.searchTerm = '';
+        this.cancelInlineEdit();
+      });
 
-      this.selectedFilter = 'All';
-      this.searchTerm = '';
-      this.cancelInlineEdit();
+      await this.loadApplicationsForCurrentUser();
     } catch (error) {
-      this.loginError = error instanceof Error
-        ? error.message
-        : 'Something went wrong while creating your account.';
+      this.ngZone.run(() => {
+        this.loginError = error instanceof Error
+          ? error.message
+          : 'Something went wrong while creating your account.';
+      });
     } finally {
-      this.isAuthLoading = false;
+      this.ngZone.run(() => {
+        this.isAuthLoading = false;
+      });
     }
   }
 
@@ -293,19 +327,23 @@ export class App {
     try {
       await this.authService.logout();
 
-      this.isLoggedIn = false;
-      this.selectedUser = '';
-      this.loggedInEmail = '';
+      this.ngZone.run(() => {
+        this.isLoggedIn = false;
+        this.selectedUser = '';
+        this.loggedInEmail = '';
 
-      this.loginUsername = '';
-      this.loginPassword = '';
-      this.loginError = '';
+        this.loginUsername = '';
+        this.loginPassword = '';
+        this.loginError = '';
 
-      this.selectedFilter = 'All';
-      this.searchTerm = '';
-      this.cancelInlineEdit();
+        this.selectedFilter = 'All';
+        this.searchTerm = '';
+        this.cancelInlineEdit();
+      });
     } finally {
-      this.isAuthLoading = false;
+      this.ngZone.run(() => {
+        this.isAuthLoading = false;
+      });
     }
   }
 }

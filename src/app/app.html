@@ -1,8 +1,9 @@
 <ng-container *ngIf="isAuthChecking; else authReady">
   <div class="login-page">
-    <section class="login-card">
+    <section class="login-card loading-card">
+      <div class="loading-spinner"></div>
       <h1>Job Hunt Tracker</h1>
-      <p>Checking your session...</p>
+      <p>Loading your dashboard...</p>
     </section>
   </div>
 </ng-container>
