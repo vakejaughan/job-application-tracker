@@ -1,59 +1,138 @@
-# JobApplicationTracker
+# Job Application Tracker
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.11.
+A full-stack job application tracking web app built with Angular and Firebase.
 
-## Development server
+Users can create an account, log in, and manage their own job applications with searchable, filterable, per-user data.
 
-To start a local development server, run:
+**Live Demo:** https://job-application-tracker-d9c37.web.app
 
-```bash
-ng serve
-```
+---
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Overview
 
-## Code scaffolding
+Job Application Tracker helps users organize their job search by tracking applications, statuses, notes, job listing links, and application dates in one place.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+This project started as an Angular practice app and was gradually expanded into a hosted full-stack application using Firebase Authentication, Cloud Firestore, Firebase Hosting, and Firestore security rules.
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Features
 
-```bash
-ng generate --help
-```
+- Create an account and log in with Firebase Authentication
+- Stay logged in across page refreshes
+- Add job applications
+- Edit applications inline
+- Delete applications with confirmation
+- Search applications by company, role, location, notes, or job URL
+- Filter applications by status
+- View dashboard stats for application statuses
+- Store application data per authenticated user in Cloud Firestore
+- Protect user data with Firestore security rules
+- Responsive UI
+- Custom favicon and polished empty states
+- Hosted publicly with Firebase Hosting
 
-## Building
+---
 
-To build the project run:
+## Tech Stack
 
-```bash
-ng build
-```
+- Angular
+- TypeScript
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Hosting
+- HTML
+- CSS
+- Git
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## Application Statuses
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Applications can be tracked with the following statuses:
 
-```bash
-ng test
-```
+- Saved
+- Applied
+- Followed Up
+- Interviewing
+- Rejected
+- Offer
+- Networking
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+## Firebase Structure
 
-```bash
-ng e2e
-```
+Application data is stored in Cloud Firestore using the authenticated user's Firebase UID.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+    users
+    └── {uid}
+        └── applications
+            └── {applicationId}
+                ├── company
+                ├── role
+                ├── location
+                ├── dateApplied
+                ├── status
+                ├── jobUrl
+                └── notes
 
-## Additional Resources
+---
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Security Rules
+
+Firestore security rules are configured so users can only read and write their own application data.
+
+    rules_version = '2';
+
+    service cloud.firestore {
+      match /databases/{database}/documents {
+
+        match /users/{userId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+
+          match /applications/{applicationId} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
+          }
+        }
+      }
+    }
+
+---
+
+## What I Learned
+
+Through this project, I practiced:
+
+- Building a standalone Angular application
+- Managing component state with TypeScript
+- Using template-driven forms with ngModel
+- Creating reusable services
+- Moving from localStorage to a real cloud database
+- Implementing Firebase Authentication
+- Structuring per-user Firestore data
+- Writing Firestore security rules
+- Deploying an Angular app with Firebase Hosting
+- Using Git to checkpoint stable project builds
+- Debugging real-world frontend and Firebase integration issues
+
+---
+
+## Future Improvements
+
+Possible future features include:
+
+- Add application timestamps with createdAt and updatedAt
+- Add sorting by newest, oldest, company, and status
+- Add stronger form validation messages
+- Add password reset
+- Add user profile settings
+- Add contact/networking fields
+- Add follow-up reminder dates
+- Add CSV export
+- Improve mobile styling
+- Add automated deployment through GitHub Actions
+
+## Author
+
+Built by Jake Vaughan as a full-stack Angular/Firebase practice project.
