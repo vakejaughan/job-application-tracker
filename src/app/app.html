@@ -398,8 +398,26 @@
 
     <ng-template #emptyState>
       <div class="empty-state">
+        <div class="empty-state-icon">💼</div>
+
         <h3>No applications found</h3>
-        <p>Add your first job application or change the selected filter.</p>
+
+        <p *ngIf="selectedFilter === 'All' && !searchTerm">
+          Start tracking your job search by adding your first application above.
+        </p>
+
+        <p *ngIf="selectedFilter !== 'All' || searchTerm">
+          No applications match your current search or filter.
+        </p>
+
+        <button
+          *ngIf="selectedFilter !== 'All' || searchTerm"
+          type="button"
+          class="action-button secondary-button"
+          (click)="selectedFilter = 'All'; searchTerm = ''"
+        >
+          Clear Filters
+        </button>
       </div>
     </ng-template>
   </div>
