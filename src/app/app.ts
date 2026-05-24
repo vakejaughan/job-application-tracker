@@ -27,6 +27,9 @@ export class App {
   loggedInEmail: string = '';
 
   isLoggedIn: boolean = false;
+  isAuthLoading: boolean = false;
+  isAuthChecking: boolean = true;
+
   loginUsername: string = '';
   loginPassword: string = '';
   loginError: string = '';
@@ -58,7 +61,26 @@ export class App {
   constructor(
     private jobApplicationService: JobApplicationService,
     private authService: AuthService
-  ) {}
+  ) {
+    this.authService.watchAuthState(async user => {
+      if (user) {
+        this.selectedUser = user.uid;
+        this.loggedInEmail = user.email || '';
+        this.isLoggedIn = true;
+
+        await this.jobApplicationService.loadApplications(this.selectedUser);
+      } else {
+        this.selectedUser = '';
+        this.loggedInEmail = '';
+        this.isLoggedIn = false;
+      }
+
+      this.selectedFilter = 'All';
+      this.searchTerm = '';
+      this.cancelInlineEdit();
+      this.isAuthChecking = false;
+    });
+  }
 
   get applications(): JobApplication[] {
     return this.jobApplicationService.getApplications();
@@ -87,35 +109,39 @@ export class App {
   }
 
   async submitApplication(): Promise<void> {
-  if (!this.newApplication.company || !this.newApplication.role) {
-    return;
+    if (!this.selectedUser) {
+      return;
+    }
+
+    if (!this.newApplication.company || !this.newApplication.role) {
+      return;
+    }
+
+    if (this.editingApplicationId !== null) {
+      await this.jobApplicationService.updateApplication(
+        this.selectedUser,
+        this.editingApplicationId,
+        this.newApplication
+      );
+
+      this.editingApplicationId = null;
+    } else {
+      await this.jobApplicationService.addApplication(
+        this.selectedUser,
+        this.newApplication
+      );
+    }
+
+    this.newApplication = {
+      company: '',
+      role: '',
+      location: '',
+      dateApplied: '',
+      status: 'Saved',
+      jobUrl: '',
+      notes: ''
+    };
   }
-
-  if (this.editingApplicationId !== null) {
-    await this.jobApplicationService.updateApplication(
-      this.selectedUser,
-      this.editingApplicationId,
-      this.newApplication
-    );
-
-    this.editingApplicationId = null;
-  } else {
-    await this.jobApplicationService.addApplication(
-      this.selectedUser,
-      this.newApplication
-    );
-  }
-
-  this.newApplication = {
-    company: '',
-    role: '',
-    location: '',
-    dateApplied: '',
-    status: 'Saved',
-    jobUrl: '',
-    notes: ''
-  };
-}
 
   startEditingApplication(application: JobApplication): void {
     this.editingApplicationId = application.id;
@@ -132,22 +158,26 @@ export class App {
   }
 
   async saveInlineEdit(): Promise<void> {
-  if (this.editingApplicationId === null) {
-    return;
+    if (!this.selectedUser) {
+      return;
+    }
+
+    if (this.editingApplicationId === null) {
+      return;
+    }
+
+    if (!this.editingApplicationDraft.company || !this.editingApplicationDraft.role) {
+      return;
+    }
+
+    await this.jobApplicationService.updateApplication(
+      this.selectedUser,
+      this.editingApplicationId,
+      this.editingApplicationDraft
+    );
+
+    this.cancelInlineEdit();
   }
-
-  if (!this.editingApplicationDraft.company || !this.editingApplicationDraft.role) {
-    return;
-  }
-
-  await this.jobApplicationService.updateApplication(
-    this.selectedUser,
-    this.editingApplicationId,
-    this.editingApplicationDraft
-  );
-
-  this.cancelInlineEdit();
-}
 
   cancelInlineEdit(): void {
     this.editingApplicationId = null;
@@ -164,14 +194,18 @@ export class App {
   }
 
   async deleteApplication(id: number): Promise<void> {
-  const confirmed = confirm('Are you sure you want to delete this application?');
+    if (!this.selectedUser) {
+      return;
+    }
 
-  if (!confirmed) {
-    return;
+    const confirmed = confirm('Are you sure you want to delete this application?');
+
+    if (!confirmed) {
+      return;
+    }
+
+    await this.jobApplicationService.deleteApplication(this.selectedUser, id);
   }
-
-  await this.jobApplicationService.deleteApplication(this.selectedUser, id);
-}
 
   getTotalApplications(): number {
     return this.applications.length;
@@ -198,6 +232,9 @@ export class App {
   }
 
   async login(): Promise<void> {
+    this.isAuthLoading = true;
+    this.loginError = '';
+
     try {
       const user = await this.authService.login(
         this.loginUsername,
@@ -207,9 +244,9 @@ export class App {
       this.selectedUser = user.uid;
       this.loggedInEmail = user.email || '';
       this.isLoggedIn = true;
-      this.loginError = '';
 
       await this.jobApplicationService.loadApplications(this.selectedUser);
+
       this.selectedFilter = 'All';
       this.searchTerm = '';
       this.cancelInlineEdit();
@@ -217,10 +254,15 @@ export class App {
       this.loginError = error instanceof Error
         ? error.message
         : 'Something went wrong while logging in.';
+    } finally {
+      this.isAuthLoading = false;
     }
   }
 
   async createAccount(): Promise<void> {
+    this.isAuthLoading = true;
+    this.loginError = '';
+
     try {
       const user = await this.authService.createAccount(
         this.loginUsername,
@@ -230,7 +272,6 @@ export class App {
       this.selectedUser = user.uid;
       this.loggedInEmail = user.email || '';
       this.isLoggedIn = true;
-      this.loginError = '';
 
       await this.jobApplicationService.loadApplications(this.selectedUser);
 
@@ -241,22 +282,30 @@ export class App {
       this.loginError = error instanceof Error
         ? error.message
         : 'Something went wrong while creating your account.';
+    } finally {
+      this.isAuthLoading = false;
     }
   }
 
   async logout(): Promise<void> {
-    await this.authService.logout();
+    this.isAuthLoading = true;
 
-    this.isLoggedIn = false;
-    this.selectedUser = '';
-    this.loggedInEmail = '';
+    try {
+      await this.authService.logout();
 
-    this.loginUsername = '';
-    this.loginPassword = '';
-    this.loginError = '';
+      this.isLoggedIn = false;
+      this.selectedUser = '';
+      this.loggedInEmail = '';
 
-    this.selectedFilter = 'All';
-    this.searchTerm = '';
-    this.cancelInlineEdit();
+      this.loginUsername = '';
+      this.loginPassword = '';
+      this.loginError = '';
+
+      this.selectedFilter = 'All';
+      this.searchTerm = '';
+      this.cancelInlineEdit();
+    } finally {
+      this.isAuthLoading = false;
+    }
   }
 }

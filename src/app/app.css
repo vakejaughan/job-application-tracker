@@ -81,6 +81,7 @@ body {
   margin: 0 0 28px;
   color: #6b7280;
   font-size: 15px;
+  line-height: 1.5;
 }
 
 .login-card form {
@@ -237,12 +238,17 @@ textarea {
   background: #374151;
 }
 
-.delete-button {
-  background: #dc2626;
+.primary-button:disabled,
+.action-button:disabled,
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.delete-button:hover {
-  background: #b91c1c;
+.primary-button:disabled:hover,
+.action-button:disabled:hover,
+button:disabled:hover {
+  background: #111827;
 }
 
 .secondary-button {
@@ -251,6 +257,22 @@ textarea {
 
 .secondary-button:hover {
   background: #4b5563;
+}
+
+.secondary-button:disabled:hover {
+  background: #6b7280;
+}
+
+.delete-button {
+  background: #dc2626;
+}
+
+.delete-button:hover {
+  background: #b91c1c;
+}
+
+.delete-button:disabled:hover {
+  background: #dc2626;
 }
 
 /* Toolbar/Search */
@@ -434,10 +456,6 @@ textarea {
 @media (max-width: 500px) {
   .login-card {
     padding: 28px;
-  }
-
-  .quick-login-buttons {
-    grid-template-columns: 1fr;
   }
 
   .login-actions {
